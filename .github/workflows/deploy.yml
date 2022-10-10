@@ -1,148 +1,63 @@
-name: mule sample hello world
-
- 
-
-# Controls when the action will run.
+name: mule-sample-hello-world
 
 on:
 
-# Triggers the workflow on push or pull request events on dev branch
+  push:
 
-push:
+    branches: [ main ]
 
-branches: [main ]
+  pull_request:
 
-pull_request:
-
-branches: [ main ]
-
- 
-
-# Allows you to run this workflow manually from the Actions tab workflow_dispatch:
-
- 
-
-# A workflow run is made up of one or more jobs
+    branches: [ main ]
 
 jobs:
 
-# “build”
+  build:
 
-build:
+    runs-on: ubuntu-latest
 
-# The type of runner that the job will run on
+    steps:
 
-runs-on: ubuntu-latest
+        - uses: actions/checkout@v2
 
- 
+        - name: Cache m2 repositories
 
-# Steps represent a sequence of tasks that will be executed as part of the job
+          uses: actions/cache@v2
 
-steps:
+          env:
 
- 
+           cache-name: cache-node-modules
 
-# Checks-out your repository
+          with:
 
-– uses: actions/checkout@v2
+           # npm cache files are stored in `~/.m2/repository` on Linux/macOS
 
-– uses: actions/cache@v1
+            path: ~/.m2/repository
 
-with:
+            key: ${{ runner.os }}-maven-${{ env.cache-name }}-${{ hashFiles('**/pom.xml') }}
 
-path: ~/.m2/repository
+            restore-keys: |
 
-key: ${{ runner.os }}-maven-${{ hashFiles(‘**/pom.xml’) }}
+                ${{ runner.os }}-maven-${{ env.cache-name }}-
 
-restore-keys: |
+                ${{ runner.os }}-maven-
 
-${{ runner.os }}-maven-
+                ${{ runner.os }}-
 
-– name: Set up JDK 1.8
+      
+        - name: Set up JDK 1.8 version
 
-uses: actions/setup-java@v1
+          uses: actions/setup-java@v1
 
-with:
+          with:
 
-java-version: 1.8
+            java-version: 1.8
 
- 
+            path: ~/.m2/repository
 
-– name : build
+            settings-path: ${{ github.workspace }} # location for the settings.xml file
 
-run: mvn -B package –file pom.xml
+        - name: Build and cloudhub deployment
 
- 
-
-– name: Artifact file name with commit hash
-
-run: |
-
-artifactName1=$(ls target/*.jar | head -1)
-
-commitHash=$(git rev-parse –short “$GITHUB_SHA”)
-
-artifactName2=$(ls target/*.jar | head -1 | sed “s/.jar/.$commitHash.jar/g”)
-
-mv $artifactName1 $artifactName2
-
- 
-
-– uses: actions/upload-artifact@master
-
-with:
-
-name: artifacts
-
-path: target/*.jar
-
- 
-
-deploy:
-
-needs: build
-
-runs-on: ubuntu-latest
-
-steps:
-
-– uses: actions/checkout@v2
-
-– uses: actions/cache@v1
-
-with:
-
-path: ~/.m2/repository
-
-key: ${{ runner.os }}-maven-${{ hashFiles(‘**/pom.xml’) }}
-
-restore-keys: |
-
-${{ runner.os }}-maven-
-
-– uses: actions/download-artifact@master
-
-with:
-
-name: artifacts
-
- 
-
-– name: Deploy to Anypoint Platform
-
-env:
-
-USERNAME: ${{ secrets.ANYPOINT_USERNAME }}
-
-PASSWORD: ${{ secrets.ANYPOINT_PASSWORD }}
-
-run: |
-
-artifactName=$(ls *.jar | head -1)
-
- 
-
- 
-
-mvn mule:deploy -Dmule.artifact=$artifactName -Dusername=$USERNAME -Dpassword=$PASSWORD
+          run: mvn clean package deploy -DskipTests -DmuleDeploy -Dusername=$USERNAME -Dpassword=$PASSWORD
 
