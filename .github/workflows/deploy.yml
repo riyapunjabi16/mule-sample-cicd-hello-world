@@ -4,11 +4,11 @@ on:
 
   push:
 
-    branches: [ main ]
+    branches: [ master ]
 
   pull_request:
 
-    branches: [ main ]
+    branches: [ master ]
 
 jobs:
 
@@ -44,7 +44,20 @@ jobs:
 
                 ${{ runner.os }}-
 
-      
+        - name: Create maven settings.xml
+
+          uses: whelk-io/maven-settings-xml-action@v5
+
+          with:
+
+            servers: '[{"id": "MuleRepository", {"id": "anypoint-exchange", "username": "${{ secrets.ANYPOINT_USER }}", "password": "${{ secrets.ANYPOINT_PASSWORD }}" }]'
+
+            repositories: '[{"id": "local-repo", "url": "file:///${project.basedir}/local-repo"},{"id": "MuleRepository", "url": "https://repository.mulesoft.org/nexus-ee/content/repositories/releases-ee/"},{"id": "anypoint-exchange", "url": "https://maven.anypoint.mulesoft.com/api/v2/maven"},{"id": "mulesoft-releases", "url": "https://repository.mulesoft.org/releases/"},{"id": "mule-public", "url": "https://repository.mulesoft.org/nexus/content/repositories/public"}]'
+
+        - run: |
+
+            cat ~/.m2/settings.xml
+
         - name: Set up JDK 1.8 version
 
           uses: actions/setup-java@v1
@@ -59,5 +72,4 @@ jobs:
 
         - name: Build and cloudhub deployment
 
-          run: mvn clean package deploy -DskipTests -DmuleDeploy -Dusername=$USERNAME -Dpassword=$PASSWORD
-
+          run: mvn clean package deploy -DskipTests -DmuleDeploy 
