@@ -12,7 +12,7 @@
 	<name>mule-sample-ci-cd-hello-world</name>
 
 	<properties>
-		<anypoint.userName>rpunjabi-personal</anypoint.userName>
+		<anypoint.username>rpunjabi-personal</anypoint.userName>
 		<anypoint.password>Rpunjabi@16</anypoint.password>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
