@@ -1,4 +1,4 @@
-name: mule-sample-ci-cd-hello-world
+name: mule-sample-ci-cd-hello-world-test-app-without
 
 on:
 
